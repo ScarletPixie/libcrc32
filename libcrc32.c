@@ -78,8 +78,8 @@ unsigned long crc32(const char* data, unsigned long size)
     for (unsigned long i = 0; i < size; i++)
     {
         const unsigned char table_index = (unsigned char)((crc ^ udata[i]) & 0xFFUL);
-        crc = (crc >> 8) & 0xFFFFFFFFUL;
-        crc = (crc ^ crc32_table[table_index]) & 0xFFFFFFFFUL;
+        crc = (crc >> 8) & UINT32_MASK;
+        crc = (crc ^ crc32_table[table_index]) & UINT32_MASK;
     }
-    return (crc ^ 0xFFFFFFFFUL) & 0xFFFFFFFFUL;
+    return (crc ^ UINT32_MASK) & UINT32_MASK;
 }
