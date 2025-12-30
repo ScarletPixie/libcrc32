@@ -1,5 +1,8 @@
 #include "libcrc32.h"
 
+#include <stdlib.h>
+
+
 /* Reversed polynomial: 0xEDB88320 */
 static const unsigned long crc32_table[256] = {
     0x00000000UL, 0x77073096UL, 0xEE0E612CUL, 0x990951BAUL,
@@ -68,9 +71,12 @@ static const unsigned long crc32_table[256] = {
     0xB40BBE37UL, 0xC30C8EA1UL, 0x5A05DF1BUL, 0x2D02EF8D
 };
 
+static const unsigned long UINT32_MASK = 0xFFFFFFFFUL;
+
 unsigned long crc32(const char* data, unsigned long size)
 {
-    static const unsigned long UINT32_MASK = 0xFFFFFFFFUL;
+    if (data == NULL)
+        abort();
 
     unsigned long crc = UINT32_MASK;
     const unsigned char* udata = (const unsigned char*)data;
@@ -82,4 +88,27 @@ unsigned long crc32(const char* data, unsigned long size)
         crc = (crc ^ crc32_table[table_index]) & UINT32_MASK;
     }
     return (crc ^ UINT32_MASK) & UINT32_MASK;
+}
+unsigned long crc32_stream(const char* data, unsigned long size)
+{
+    if (data == NULL && size != 0)
+        abort();
+
+    static unsigned long crc = UINT32_MASK;
+
+    if (size == 0)
+    {
+        const unsigned long result = (crc ^ UINT32_MASK) & UINT32_MASK;
+        crc = UINT32_MASK;
+        return result;
+    }
+
+    const unsigned char* udata = (const unsigned char*)data;
+    for (unsigned long i = 0; i < size; i++)
+    {
+        const unsigned char table_index = (unsigned char)((crc ^ udata[i]) & 0xFFUL);
+        crc = (crc >> 8) & UINT32_MASK;
+        crc = (crc ^ crc32_table[table_index]) & UINT32_MASK;
+    }
+    return 0x00000000UL;
 }

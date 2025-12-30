@@ -5,6 +5,7 @@ GREATEST_MAIN_DEFS();
 TEST test_basic_hash_returns_correct_value(void);
 TEST test_additional_hashes(void);
 TEST test_different_arrangements_of_word_returns_different_results(void);
+TEST test_streaming_crc32(void);
 
 int main(int argc, char** argv)
 {
@@ -12,9 +13,22 @@ int main(int argc, char** argv)
     RUN_TEST(test_basic_hash_returns_correct_value);
     RUN_TEST(test_additional_hashes);
     RUN_TEST(test_different_arrangements_of_word_returns_different_results);
+    RUN_TEST(test_streaming_crc32);
     GREATEST_MAIN_END();
 }
 
+TEST test_streaming_crc32(void)
+{
+    const char* data = "abc";
+    ASSERT_EQ(0x00000000, crc32_stream(data + 0, 1));
+    ASSERT_EQ(0x00000000, crc32_stream(data + 1, 1));
+    ASSERT_EQ(0x00000000, crc32_stream(data + 2, 1));
+    ASSERT_EQ(0x352441C2, crc32_stream(NULL, 0));
+
+    // buffer is reset.
+    ASSERT_EQ(0x00000000, crc32_stream(NULL, 0));
+    PASS();
+}
 TEST test_different_arrangements_of_word_returns_different_results(void)
 {
     ASSERT_NEQ(crc32("abc", 3), crc32("bac", 3));
